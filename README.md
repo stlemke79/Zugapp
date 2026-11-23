@@ -4,9 +4,9 @@ Diktieren in jedes Windows-Programm, mit lokaler Spracherkennung (Whisper) und o
 
 ## So funktioniert's
 
-1. **Strg + Alt + D** drücken. Unten am Bildschirm erscheint „Aufnahme läuft …“.
+1. **Strg + Alt + D** drücken. Rechts oben auf dem Monitor erscheint ein pulsierendes rotes Mikrofon.
 2. Sprechen.
-3. Nochmal **Strg + Alt + D** drücken. **Esc** bricht ab.
+3. Nochmal **Strg + Alt + D** drücken. Das Mikrofon wird grau mit einem drehenden Ring, solange Erkennung und KI arbeiten. **Esc** bricht ab.
 4. Der Text landet automatisch dort, wo du gerade schreibst (Word, Outlook, Browser, Teams …).
    Ist kein Eingabefeld aktiv, öffnet sich ein eigenes Fenster mit dem Text zum Bearbeiten und Kopieren.
 

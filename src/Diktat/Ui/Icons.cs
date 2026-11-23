@@ -22,13 +22,7 @@ internal static class Icons
             using var bg = new SolidBrush(background);
             g.FillEllipse(bg, 0, 0, size - 1, size - 1);
 
-            float s = size / 32f;
-            using var white = new SolidBrush(Color.White);
-            using var pen = new Pen(Color.White, 2.2f * s) { StartCap = LineCap.Round, EndCap = LineCap.Round };
-            using (var capsule = RoundedRect(new RectangleF(12 * s, 6 * s, 8 * s, 13 * s), 4 * s))
-                g.FillPath(white, capsule);
-            g.DrawArc(pen, 9 * s, 10 * s, 14 * s, 12 * s, 0, 180);
-            g.DrawLine(pen, 16 * s, 22 * s, 16 * s, 26 * s);
+            DrawMicrophone(g, size / 2f, size / 2f, size * 0.62f, Color.White);
         }
 
         IntPtr handle = bmp.GetHicon();
@@ -40,6 +34,19 @@ internal static class Icons
         {
             DestroyIcon(handle);
         }
+    }
+
+    /// <summary>Zeichnet ein Mikrofon-Symbol, zentriert um (cx, cy), Gesamthöhe <paramref name="height"/>.</summary>
+    public static void DrawMicrophone(Graphics g, float cx, float cy, float height, Color color)
+    {
+        float u = height / 20f; // Symbol ist 20 Einheiten hoch
+        float top = cy - 10 * u;
+        using var brush = new SolidBrush(color);
+        using var pen = new Pen(color, 2.2f * u) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+        using (var capsule = RoundedRect(new RectangleF(cx - 4 * u, top, 8 * u, 13 * u), 4 * u))
+            g.FillPath(brush, capsule);
+        g.DrawArc(pen, cx - 7 * u, top + 4 * u, 14 * u, 12 * u, 0, 180);
+        g.DrawLine(pen, cx, top + 16 * u, cx, top + 20 * u);
     }
 
     public static GraphicsPath RoundedRect(RectangleF r, float radius)

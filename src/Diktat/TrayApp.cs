@@ -43,7 +43,6 @@ internal sealed class TrayApp : ApplicationContext
     public TrayApp()
     {
         _ui = SynchronizationContext.Current ?? new WindowsFormsSynchronizationContext();
-        _overlay.CreateControl();
         _ = _overlay.Handle; // Fenster-Handle jetzt erzeugen (UI-Thread)
 
         _lastItem = new ToolStripMenuItem("Letztes Diktat kopieren", null, (_, _) => CopyLast()) { Enabled = _history.Entries.Count > 0 };
@@ -184,8 +183,7 @@ internal sealed class TrayApp : ApplicationContext
         _tray.Icon = _iconRecording;
         _hotkeys.Register(HotkeyCancel, 0, Native.VK_ESCAPE);
         _recordingWatch.Start();
-        var where = _target.IsEditable ? "wird ins aktive Fenster eingefügt" : "erscheint in eigenem Fenster";
-        _overlay.ShowRecording($"{_settings.HotkeyText} = fertig  ·  Esc = abbrechen  ·  Text {where}", _target.Window);
+        _overlay.ShowRecording(_target.Window);
     }
 
     private async Task FinishAsync()
@@ -193,7 +191,7 @@ internal sealed class TrayApp : ApplicationContext
         _state = State.Processing;
         _recordingWatch.Stop();
         _tray.Icon = _iconBusy;
-        _overlay.ShowBusy("Wird erkannt …");
+        _overlay.ShowBusy();
         _processingCts = new CancellationTokenSource();
         var ct = _processingCts.Token;
         var target = _target;
@@ -227,7 +225,6 @@ internal sealed class TrayApp : ApplicationContext
                 }
                 else
                 {
-                    _overlay.ShowBusy("KI überarbeitet den Text …");
                     try
                     {
                         clock.Restart();
