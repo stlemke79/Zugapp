@@ -32,37 +32,53 @@ internal static class FocusDetector
             return new FocusInfo(hwnd, true, app);
 
         // 2) Moderne Programme (Browser, Electron, UWP): UI Automation fragen – mit Zeitlimit, falls die App hängt.
-        var uia = Task.Run(() => CheckUiAutomation());
-        bool editable = uia.Wait(TimeSpan.FromMilliseconds(800)) && uia.Result;
-        return new FocusInfo(hwnd, editable, app);
+        //    Grundsatz: lieber einfügen. Das eigene Fenster gibt es nur, wenn sicher KEIN Eingabefeld aktiv ist.
+        //    (Browser und Electron-Apps melden ihre Eingabefelder oft unvollständig.)
+        var uia = Task.Run(CheckUiAutomation);
+        var (verdict, detail) = uia.Wait(TimeSpan.FromMilliseconds(800)) ? uia.Result : (Verdict.Unknown, "Zeitlimit");
+        Log.Info($"Fokus: {app} – {detail} → {verdict}");
+        return new FocusInfo(hwnd, verdict != Verdict.NotEditable, app);
     }
 
-    private static bool CheckUiAutomation()
+    private enum Verdict { Editable, NotEditable, Unknown }
+
+    // Steuerelemente, in die man sicher nicht schreibt.
+    private static readonly ControlType[] NonTextTypes =
+    {
+        ControlType.Button, ControlType.SplitButton, ControlType.CheckBox, ControlType.RadioButton,
+        ControlType.List, ControlType.ListItem, ControlType.Tree, ControlType.TreeItem,
+        ControlType.Menu, ControlType.MenuBar, ControlType.MenuItem, ControlType.Tab, ControlType.TabItem,
+        ControlType.Hyperlink, ControlType.Image, ControlType.ScrollBar, ControlType.Slider, ControlType.Thumb,
+        ControlType.ToolBar, ControlType.TitleBar, ControlType.Header, ControlType.HeaderItem,
+        ControlType.DataGrid, ControlType.DataItem, ControlType.Table, ControlType.Calendar,
+        ControlType.ProgressBar, ControlType.StatusBar, ControlType.ToolTip, ControlType.Separator,
+    };
+
+    private static (Verdict, string) CheckUiAutomation()
     {
         try
         {
             var element = AutomationElement.FocusedElement;
-            if (element is null) return false;
+            if (element is null) return (Verdict.Unknown, "kein Fokus-Element");
             var current = element.Current;
-            if (current.ProcessId == Environment.ProcessId) return false;
-            if (!current.IsEnabled) return false;
-
             var type = current.ControlType;
-            bool hasWritableValue = element.TryGetCurrentPattern(ValuePattern.Pattern, out var vp)
-                                    && !((ValuePattern)vp).Current.IsReadOnly;
+            var detail = $"{type.ProgrammaticName.Replace("ControlType.", "")} \"{current.ClassName}\"";
 
-            if (type == ControlType.Edit)
-                return !element.TryGetCurrentPattern(ValuePattern.Pattern, out var v) || !((ValuePattern)v).Current.IsReadOnly;
+            if (current.ProcessId == Environment.ProcessId) return (Verdict.NotEditable, detail + " (eigenes Fenster)");
 
-            if (type == ControlType.Document || type == ControlType.ComboBox || type == ControlType.Custom || type == ControlType.Group)
-                return hasWritableValue;
+            if (element.TryGetCurrentPattern(ValuePattern.Pattern, out var vp))
+            {
+                bool readOnly = ((ValuePattern)vp).Current.IsReadOnly;
+                return (readOnly ? Verdict.NotEditable : Verdict.Editable, detail + (readOnly ? " schreibgeschützt" : " beschreibbar"));
+            }
 
-            return false;
+            if (type == ControlType.Edit) return (Verdict.Editable, detail);
+            if (Array.IndexOf(NonTextTypes, type) >= 0) return (Verdict.NotEditable, detail);
+            return (Verdict.Unknown, detail);
         }
         catch (Exception ex)
         {
-            Log.Info($"UI Automation nicht verfügbar: {ex.Message}");
-            return false;
+            return (Verdict.Unknown, $"UI Automation nicht verfügbar: {ex.Message}");
         }
     }
 

@@ -184,7 +184,7 @@ internal sealed class TrayApp : ApplicationContext
         _tray.Icon = _iconRecording;
         _hotkeys.Register(HotkeyCancel, 0, Native.VK_ESCAPE);
         _recordingWatch.Start();
-        var where = _target.IsEditable ? "wird ins aktive Feld eingefügt" : "erscheint in eigenem Fenster";
+        var where = _target.IsEditable ? "wird ins aktive Fenster eingefügt" : "erscheint in eigenem Fenster";
         _overlay.ShowRecording($"{_settings.HotkeyText} = fertig  ·  Esc = abbrechen  ·  Text {where}", _target.Window);
     }
 
@@ -207,8 +207,10 @@ internal sealed class TrayApp : ApplicationContext
                 return;
             }
 
+            var clock = System.Diagnostics.Stopwatch.StartNew();
             string raw = await _transcriber.TranscribeAsync(samples, _settings, ct);
-            Log.Info($"Erkannt: {raw.Length} Zeichen, {samples.Length / (double)AudioRecorder.SampleRate:F1} s Audio");
+            var whisperTime = clock.Elapsed;
+            Log.Info($"Erkannt: {raw.Length} Zeichen aus {samples.Length / (double)AudioRecorder.SampleRate:F1} s Audio in {whisperTime.TotalSeconds:F1} s (Modell {_settings.WhisperModel})");
             if (string.IsNullOrWhiteSpace(raw))
             {
                 Balloon("Nichts verstanden", "Die Aufnahme enthielt keinen erkennbaren Text.", ToolTipIcon.Info);
@@ -228,7 +230,9 @@ internal sealed class TrayApp : ApplicationContext
                     _overlay.ShowBusy("KI überarbeitet den Text …");
                     try
                     {
+                        clock.Restart();
                         final = await AiPostProcessor.ProcessAsync(raw, _settings, target?.AppName, ct);
+                        Log.Info($"KI-Überarbeitung in {clock.Elapsed.TotalSeconds:F1} s (Modell {_settings.AiModel})");
                     }
                     catch (OperationCanceledException) when (ct.IsCancellationRequested)
                     {
