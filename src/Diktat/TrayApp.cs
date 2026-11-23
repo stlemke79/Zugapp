@@ -40,8 +40,9 @@ internal sealed class TrayApp : ApplicationContext
     private readonly Icon _iconBusy = Icons.Microphone(Icons.Busy);
 
     private State _state = State.Idle;
-    private FocusInfo? _target;
+    private Task<FocusInfo>? _target;
     private CancellationTokenSource? _processingCts;
+    private LiveTranscription? _live;
     private Form? _openDialog;
     private Task<bool>? _download;
 
@@ -73,7 +74,12 @@ internal sealed class TrayApp : ApplicationContext
 
         _hotkeys.HotkeyPressed += OnHotkey;
         _recorder.Level += level => _ui.Post(_ => _overlay.SetLevel(level), null);
-        _recordingWatch.Tick += (_, _) => { if (_state == State.Recording && _recorder.Duration > MaxRecording) Toggle(); };
+        _recordingWatch.Tick += (_, _) =>
+        {
+            if (_state != State.Recording) return;
+            if (_recorder.Duration > MaxRecording) Toggle();
+            else _live?.Poll(_recorder);
+        };
 
         _updateTimer.Tick += async (_, _) => await UpdateTickAsync();
         _updateTimer.Start();
@@ -184,8 +190,15 @@ internal sealed class TrayApp : ApplicationContext
         }
 
         // Ziel merken, BEVOR irgendein eigenes Fenster erscheint.
-        _target = FocusDetector.Capture();
-        Log.Info($"Aufnahme gestartet – Ziel: {_target.AppName}, Eingabefeld: {_target.IsEditable}");
+        // Zielfenster merken. Die genaue Prüfung (Eingabefeld ja/nein) dauert bei Browsern bis zu ~1 s –
+        // sie läuft im Hintergrund, die Aufnahme startet sofort.
+        var foreground = Native.GetForegroundWindow();
+        _target = Task.Run(() =>
+        {
+            var info = FocusDetector.Capture();
+            Log.Info($"Aufnahme gestartet – Ziel: {info.AppName}, Eingabefeld: {info.IsEditable}");
+            return info;
+        });
 
         try
         {
@@ -198,11 +211,13 @@ internal sealed class TrayApp : ApplicationContext
             return;
         }
 
+        _processingCts = new CancellationTokenSource();
+        _live = new LiveTranscription(_transcriber, _settings, _processingCts.Token);
         _state = State.Recording;
         _tray.Icon = _iconRecording;
         _hotkeys.Register(HotkeyCancel, 0, Native.VK_ESCAPE);
         _recordingWatch.Start();
-        _overlay.ShowRecording(_target.Window);
+        _overlay.ShowRecording(foreground);
     }
 
     private async Task FinishAsync()
@@ -211,13 +226,14 @@ internal sealed class TrayApp : ApplicationContext
         _recordingWatch.Stop();
         _tray.Icon = _iconBusy;
         _overlay.ShowBusy();
-        _processingCts = new CancellationTokenSource();
-        var ct = _processingCts.Token;
-        var target = _target;
+        var ct = _processingCts!.Token;
+        var targetTask = _target!;
+        var live = _live!;
 
         try
         {
             var samples = await _recorder.StopAsync();
+            var target = await targetTask;
             if (!AudioRecorder.ContainsSpeech(samples))
             {
                 Balloon("Nichts gehört", "Es wurde keine Sprache erkannt. Mikrofon in den Einstellungen prüfen.", ToolTipIcon.Info);
@@ -225,9 +241,9 @@ internal sealed class TrayApp : ApplicationContext
             }
 
             var clock = System.Diagnostics.Stopwatch.StartNew();
-            string raw = await _transcriber.TranscribeAsync(samples, _settings, ct);
+            string raw = await live.FinishAsync(samples);
             var whisperTime = clock.Elapsed;
-            Log.Info($"Erkannt: {raw.Length} Zeichen aus {samples.Length / (double)AudioRecorder.SampleRate:F1} s Audio in {whisperTime.TotalSeconds:F1} s (Modell {_settings.WhisperModel})");
+            Log.Info($"Erkannt: {raw.Length} Zeichen aus {samples.Length / (double)AudioRecorder.SampleRate:F1} s Audio, {live.ChunkCount} Abschnitt(e), Wartezeit nach Aufnahmeende {whisperTime.TotalSeconds:F1} s (Modell {_settings.WhisperModel})");
             if (string.IsNullOrWhiteSpace(raw))
             {
                 Balloon("Nichts verstanden", "Die Aufnahme enthielt keinen erkennbaren Text.", ToolTipIcon.Info);
@@ -303,6 +319,7 @@ internal sealed class TrayApp : ApplicationContext
     {
         if (_state == State.Recording)
         {
+            _processingCts?.Cancel();
             _ = _recorder.StopAsync();
             ResetToIdle();
         }
@@ -321,6 +338,7 @@ internal sealed class TrayApp : ApplicationContext
         _tray.Icon = _iconIdle;
         _processingCts?.Dispose();
         _processingCts = null;
+        _live = null;
     }
 
     // ------------------------------------------------------------ Updates

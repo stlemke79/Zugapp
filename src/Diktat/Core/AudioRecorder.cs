@@ -23,6 +23,20 @@ internal sealed class AudioRecorder : IDisposable
         get { lock (_gate) return TimeSpan.FromSeconds(_samples.Count / (double)SampleRate); }
     }
 
+    public int SampleCount
+    {
+        get { lock (_gate) return _samples.Count; }
+    }
+
+    public float[] Snapshot(int start, int count)
+    {
+        lock (_gate)
+        {
+            count = Math.Min(count, _samples.Count - start);
+            return count > 0 ? _samples.GetRange(start, count).ToArray() : Array.Empty<float>();
+        }
+    }
+
     public static IReadOnlyList<string> Devices()
     {
         var list = new List<string>();

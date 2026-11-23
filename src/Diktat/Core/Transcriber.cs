@@ -75,7 +75,7 @@ internal sealed class Transcriber : IDisposable
         finally { _lock.Release(); }
     }
 
-    public async Task<string> TranscribeAsync(float[] samples, AppSettings settings, CancellationToken ct)
+    public async Task<string> TranscribeAsync(float[] samples, AppSettings settings, CancellationToken ct, string? context = null)
     {
         await _lock.WaitAsync(ct);
         try
@@ -91,8 +91,10 @@ internal sealed class Transcriber : IDisposable
             builder = settings.Language == "auto"
                 ? builder.WithLanguageDetection()
                 : builder.WithLanguage(settings.Language);
-            if (!string.IsNullOrWhiteSpace(settings.Vocabulary))
-                builder = builder.WithPrompt(settings.Vocabulary.Trim());
+            // Prompt: Fachbegriffe + Ende des vorigen Abschnitts (hilft bei Schreibweise und Satzanschluss).
+            var prompt = $"{settings.Vocabulary?.Trim()} {context?.Trim()}".Trim();
+            if (prompt.Length > 0)
+                builder = builder.WithPrompt(prompt);
 
             var text = new StringBuilder();
             await using var processor = builder.Build();

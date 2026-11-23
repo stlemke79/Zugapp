@@ -20,6 +20,8 @@ Das Programm läuft unsichtbar mit einem Mikrofon-Symbol im Infobereich unten re
 - Beim ersten Start wird das Modell einmalig heruntergeladen, standardmäßig „small“ mit 466 MB.
   In den Einstellungen lässt sich „base“ (schneller) oder „large-v3-turbo“ (genauer, braucht einen schnellen PC) wählen.
 - Unter „Namen / Fachbegriffe“ kannst du Wörter eintragen, die oft falsch erkannt werden.
+- Die Erkennung läuft schon während du sprichst: In Sprechpausen wird der bisherige Abschnitt erkannt.
+  Nach dem Beenden muss nur noch das letzte Stück erkannt werden. Auch lange Diktate sind deshalb schnell fertig.
 
 ## KI-Nachbearbeitung (Claude)
 
