@@ -12,13 +12,33 @@ internal static class TextInserter
     /// <returns>true, wenn der Text eingefügt wurde; false, wenn das Zielfenster nicht mehr erreichbar war.</returns>
     public static async Task<bool> InsertAsync(string text, IntPtr targetWindow)
     {
-        if (targetWindow == IntPtr.Zero || !Native.IsWindow(targetWindow)) return false;
+        if (targetWindow == IntPtr.Zero || !Native.IsWindow(targetWindow))
+        {
+            Log.Info("Einfügen: Zielfenster existiert nicht mehr");
+            return false;
+        }
 
         await WaitForModifierKeysReleasedAsync();
-        if (!BringToFront(targetWindow)) return false;
+
+        bool front = false;
+        for (int attempt = 1; attempt <= 5 && !front; attempt++)
+        {
+            front = BringToFront(targetWindow);
+            if (!front) await Task.Delay(80);
+        }
+        if (!front)
+        {
+            var fg = Native.GetForegroundWindow();
+            Log.Info($"Einfügen: Zielfenster ließ sich nicht nach vorne holen (vorne ist „{Native.WindowTitle(fg)}“ [{Native.ClassName(fg)}])");
+            return false;
+        }
 
         var backup = ClipboardBackup.Capture();
-        if (!TrySetClipboardText(text)) return false;
+        if (!TrySetClipboardText(text))
+        {
+            Log.Info("Einfügen: Zwischenablage war blockiert");
+            return false;
+        }
         uint ourSequence = Native.GetClipboardSequenceNumber();
 
         await Task.Delay(40);
@@ -29,7 +49,12 @@ internal static class TextInserter
             Native.Key(Native.VK_V, true),
             Native.Key(Native.VK_CONTROL, true),
         };
-        Native.SendInput((uint)inputs.Length, inputs, System.Runtime.InteropServices.Marshal.SizeOf<Native.INPUT>());
+        uint sent = Native.SendInput((uint)inputs.Length, inputs, System.Runtime.InteropServices.Marshal.SizeOf<Native.INPUT>());
+        int error = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+        Log.Info(sent == inputs.Length
+            ? $"Einfügen: Strg+V an „{Native.WindowTitle(targetWindow)}“ gesendet"
+            : $"Einfügen: Tastendruck wurde von Windows blockiert (SendInput {sent}/{inputs.Length}, Fehler {error}) – läuft das Zielprogramm als Administrator?");
+        if (sent != inputs.Length) return false;
 
         // Dem Zielprogramm Zeit geben, die Zwischenablage zu lesen; dann alten Inhalt zurückholen –
         // aber nur, wenn inzwischen niemand sonst etwas kopiert hat.

@@ -275,6 +275,7 @@ internal sealed class TrayApp : ApplicationContext
             return;
         }
 
+        Log.Info(target is { IsEditable: true } ? "Text im eigenen Fenster angezeigt (Einfügen nicht möglich)" : "Text im eigenen Fenster angezeigt (kein Eingabefeld aktiv)");
         var reason = target is { IsEditable: true }
             ? "Das ursprüngliche Fenster war nicht mehr erreichbar – hier ist dein Text."
             : null;

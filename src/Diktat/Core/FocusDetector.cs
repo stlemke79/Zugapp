@@ -29,7 +29,10 @@ internal static class FocusDetector
         // 1) Klassische Windows-Programme (Word, Editor, Outlook …) zeigen eine System-Schreibmarke.
         var gti = new Native.GUITHREADINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf<Native.GUITHREADINFO>() };
         if (Native.GetGUIThreadInfo(threadId, ref gti) && gti.hwndCaret != IntPtr.Zero)
+        {
+            Log.Info($"Fokus: {app} – Schreibmarke vorhanden → Editable");
             return new FocusInfo(hwnd, true, app);
+        }
 
         // 2) Moderne Programme (Browser, Electron, UWP): UI Automation fragen – mit Zeitlimit, falls die App hängt.
         //    Grundsatz: lieber einfügen. Das eigene Fenster gibt es nur, wenn sicher KEIN Eingabefeld aktiv ist.

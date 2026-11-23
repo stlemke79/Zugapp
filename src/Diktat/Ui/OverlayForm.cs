@@ -24,7 +24,6 @@ internal sealed class OverlayForm : Form
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
         StartPosition = FormStartPosition.Manual;
-        TopMost = true;
         BackColor = Color.FromArgb(24, 24, 27);
         Size = new Size(420, 64);
         DoubleBuffered = true;
@@ -76,7 +75,13 @@ internal sealed class OverlayForm : Form
         using (var path = Icons.RoundedRect(new RectangleF(0, 0, Width, Height), 14))
             Region = new Region(path);
 
-        if (!Visible) Show();
+        if (!Visible)
+        {
+            // Bewusst NICHT Form.TopMost/Show(): beides kann das Fenster aktivieren und dem Zielprogramm den Fokus nehmen.
+            Native.SetWindowPos(Handle, Native.HWND_TOPMOST, Left, Top, Width, Height,
+                Native.SWP_NOACTIVATE | Native.SWP_SHOWWINDOW);
+            Visible = true;
+        }
         _pulse.Start();
         Invalidate();
     }

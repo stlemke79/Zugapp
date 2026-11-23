@@ -38,6 +38,23 @@ internal static class Native
     [DllImport("user32.dll")]
     public static extern bool SetForegroundWindow(IntPtr hWnd);
 
+    public static readonly IntPtr HWND_TOPMOST = new(-1);
+    public const uint SWP_NOACTIVATE = 0x0010;
+    public const uint SWP_SHOWWINDOW = 0x0040;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
+
+    [DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+
+    public static string WindowTitle(IntPtr hwnd)
+    {
+        var sb = new StringBuilder(256);
+        GetWindowText(hwnd, sb, sb.Capacity);
+        return sb.ToString();
+    }
+
     [DllImport("user32.dll")]
     public static extern bool IsWindow(IntPtr hWnd);
 
