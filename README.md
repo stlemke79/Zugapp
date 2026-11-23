@@ -61,7 +61,7 @@ Das funktioniert nur, weil das Repository öffentlich ist. Das Programm lädt di
 - **Programme mit Administratorrechten**: Windows erlaubt nicht, dass ein normales Programm dort Text einfügt.
   Dann erscheint der Text im eigenen Fenster.
 - Die Zwischenablage wird kurz zum Einfügen benutzt und danach wieder hergestellt.
-- Einstellungen, Verlauf und Protokoll liegen unter `%APPDATA%\Diktat`, die Sprachmodelle unter `%LOCALAPPDATA%\Diktat\models`.
+- Einstellungen, Verlauf und Protokoll liegen unter `%APPDATA%\Diktat`, die Sprachmodelle unter `%LOCALAPPDATA%\Diktat\models`, das Programm selbst unter `%LOCALAPPDATA%\DiktatApp`.
 
 ## Entwicklung
 
