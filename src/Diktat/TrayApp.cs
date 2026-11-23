@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Zugapp;
+namespace Diktat;
 
 /// <summary>
 /// Hauptsteuerung: Symbol im Infobereich + globales Tastenkürzel.
@@ -120,7 +120,7 @@ internal sealed class TrayApp : ApplicationContext
     private void ApplyHotkey(bool showBalloon)
     {
         bool ok = _hotkeys.Register(HotkeyDictate, _settings.HotkeyModifiers, _settings.HotkeyKey);
-        _tray.Text = Truncate($"Zugapp Diktat – {_settings.HotkeyText}", 63);
+        _tray.Text = Truncate($"Diktat – {_settings.HotkeyText}", 63);
         if (!ok)
         {
             Balloon("Tastenkürzel belegt",
@@ -129,7 +129,7 @@ internal sealed class TrayApp : ApplicationContext
         }
         else if (showBalloon)
         {
-            Balloon("Zugapp Diktat ist bereit", $"{_settings.HotkeyText} drücken, sprechen, nochmal {_settings.HotkeyText} drücken.", ToolTipIcon.Info);
+            Balloon("Diktat ist bereit", $"{_settings.HotkeyText} drücken, sprechen, nochmal {_settings.HotkeyText} drücken.", ToolTipIcon.Info);
         }
     }
 

@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace Zugapp;
+namespace Diktat;
 
 /// <summary>Lädt ein Whisper-Modell mit Fortschrittsanzeige herunter.</summary>
 internal sealed class DownloadForm : Form
@@ -19,7 +19,7 @@ internal sealed class DownloadForm : Form
     {
         _modelId = modelId;
         var info = Transcriber.Model(modelId);
-        Text = "Zugapp Diktat – Spracherkennung einrichten";
+        Text = "Diktat – Spracherkennung einrichten";
         Icon = Icons.Microphone(Icons.Idle);
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -44,7 +44,7 @@ internal sealed class DownloadForm : Form
             var progress = new Progress<double>(p =>
             {
                 _bar.Value = (int)(p * 1000);
-                Text = $"Zugapp Diktat – Download {p:P0}";
+                Text = $"Diktat – Download {p:P0}";
             });
             try
             {

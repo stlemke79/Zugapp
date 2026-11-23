@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Whisper.net;
 
-namespace Zugapp;
+namespace Diktat;
 
 internal sealed record WhisperModelInfo(string Id, string FileName, string Label, long ApproxBytes);
 
@@ -46,7 +46,7 @@ internal sealed class Transcriber : IDisposable
         var partial = target + ".part";
 
         using var http = new HttpClient { Timeout = TimeSpan.FromHours(2) };
-        http.DefaultRequestHeaders.UserAgent.ParseAdd("Zugapp-Diktat/0.1");
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("Diktat/0.1");
         using var response = await http.GetAsync(DownloadBase + info.FileName, HttpCompletionOption.ResponseHeadersRead, ct);
         response.EnsureSuccessStatusCode();
         long total = response.Content.Headers.ContentLength ?? info.ApproxBytes;

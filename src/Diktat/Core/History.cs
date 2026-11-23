@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace Zugapp;
+namespace Diktat;
 
 internal sealed record HistoryEntry(DateTime Time, string App, string RawText, string FinalText);
 

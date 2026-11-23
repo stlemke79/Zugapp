@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Win32;
 
-namespace Zugapp;
+namespace Diktat;
 
 internal sealed class AppSettings
 {
@@ -59,7 +59,7 @@ internal sealed class AppSettings
     [JsonIgnore]
     public string HotkeyText => Hotkey.Describe(HotkeyModifiers, HotkeyKey);
 
-    private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("Zugapp.Diktat.v1");
+    private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("Diktat.v1");
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
@@ -92,7 +92,7 @@ internal sealed class AppSettings
     // ---- Autostart über HKCU\...\Run ----
 
     private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string RunValue = "Zugapp Diktat";
+    private const string RunValue = "Diktat";
 
     public static bool Autostart
     {

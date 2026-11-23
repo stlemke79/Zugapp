@@ -9,9 +9,9 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <AssemblyName>Zugapp</AssemblyName>
-    <RootNamespace>Zugapp</RootNamespace>
-    <Product>Zugapp Diktat</Product>
+    <AssemblyName>Diktat</AssemblyName>
+    <RootNamespace>Diktat</RootNamespace>
+    <Product>Diktat</Product>
     <Version>0.1.0</Version>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationVisualStyles>true</ApplicationVisualStyles>

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace Zugapp;
+namespace Diktat;
 
 /// <summary>Unsichtbares Fenster, das globale Tastenkürzel (RegisterHotKey) empfängt.</summary>
 internal sealed class HotkeyWindow : NativeWindow, IDisposable

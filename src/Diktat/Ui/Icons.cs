@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 
-namespace Zugapp;
+namespace Diktat;
 
 /// <summary>Zeichnet die Mikrofon-Symbole für den Infobereich (keine Bilddateien nötig).</summary>
 internal static class Icons

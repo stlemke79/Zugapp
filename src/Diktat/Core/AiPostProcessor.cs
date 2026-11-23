@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Anthropic;
 using Anthropic.Models.Beta.Messages;
 
-namespace Zugapp;
+namespace Diktat;
 
 /// <summary>Überarbeitet den rohen Diktat-Text mit Claude (Zeichensetzung, Füllwörter, Format-Befehle).</summary>
 internal static class AiPostProcessor

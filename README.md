@@ -1,4 +1,4 @@
-# Zugapp Diktat (Windows)
+# Diktat (Windows)
 
 Diktieren in jedes Windows-Programm, mit lokaler Spracherkennung (Whisper) und optionaler Überarbeitung durch Claude.
 
@@ -43,8 +43,8 @@ Standardmodell ist `claude-opus-5-5` mit niedrigem Denkaufwand. Schneller und g�
 Bei jedem Push baut GitHub Actions das Programm:
 
 1. Im Repository auf **Actions** → **Windows-Build** → den neuesten Lauf klicken.
-2. Unten unter **Artifacts** auf **Zugapp-Diktat-win-x64** klicken. Es wird eine ZIP-Datei heruntergeladen.
-3. Die ZIP-Datei entpacken, z. B. nach `C:\Programme\Zugapp` oder in einen Ordner unter „Dokumente“, und **Zugapp.exe** starten.
+2. Unten unter **Artifacts** auf **Diktat-win-x64** klicken. Es wird eine ZIP-Datei heruntergeladen.
+3. Die ZIP-Datei entpacken, z. B. nach `C:\Programme\Diktat` oder in einen Ordner unter „Dokumente“, und **Diktat.exe** starten.
    .NET muss nicht installiert sein.
 4. Beim ersten Start meldet Windows SmartScreen eventuell „Unbekannter Herausgeber“. Dann auf **Weitere Informationen → Trotzdem ausführen** klicken.
    Der Grund: Das Programm ist noch nicht signiert.
@@ -56,13 +56,13 @@ Unter Einstellungen → „Mit Windows starten“ startet das Programm automatis
 - **Programme mit Administratorrechten**: Windows erlaubt nicht, dass ein normales Programm dort Text einfügt.
   Dann erscheint der Text im eigenen Fenster.
 - Die Zwischenablage wird kurz zum Einfügen benutzt und danach wieder hergestellt.
-- Einstellungen, Verlauf und Protokoll liegen unter `%APPDATA%\Zugapp`, die Sprachmodelle unter `%LOCALAPPDATA%\Zugapp\models`.
+- Einstellungen, Verlauf und Protokoll liegen unter `%APPDATA%\Diktat`, die Sprachmodelle unter `%LOCALAPPDATA%\Diktat\models`.
 
 ## Entwicklung
 
 ```
-dotnet build src/Zugapp/Zugapp.csproj
-dotnet publish src/Zugapp/Zugapp.csproj -c Release -r win-x64 --self-contained -o publish
+dotnet build src/Diktat/Diktat.csproj
+dotnet publish src/Diktat/Diktat.csproj -c Release -r win-x64 --self-contained -o publish
 ```
 
 Aufbau:

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using NAudio.Wave;
 
-namespace Zugapp;
+namespace Diktat;
 
 /// <summary>Nimmt vom Mikrofon in 16 kHz / mono / 16 bit auf – das Format, das Whisper erwartet.</summary>
 internal sealed class AudioRecorder : IDisposable

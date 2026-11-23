@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Automation;
 
-namespace Zugapp;
+namespace Diktat;
 
 internal sealed record FocusInfo(IntPtr Window, bool IsEditable, string AppName);
 

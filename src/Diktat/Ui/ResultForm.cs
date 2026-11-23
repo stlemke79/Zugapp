@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace Zugapp;
+namespace Diktat;
 
 /// <summary>Eigenes Fenster für den Text, wenn beim Diktieren kein Eingabefeld aktiv war.</summary>
 internal sealed class ResultForm : Form
@@ -16,7 +16,7 @@ internal sealed class ResultForm : Form
         _final = finalText;
         _raw = rawText;
 
-        Text = "Zugapp Diktat";
+        Text = "Diktat";
         Icon = Icons.Microphone(Icons.Idle);
         StartPosition = FormStartPosition.CenterScreen;
         Size = new Size(640, 420);

@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Zugapp;
+namespace Diktat;
 
 internal sealed class SettingsForm : Form
 {
@@ -36,7 +36,7 @@ internal sealed class SettingsForm : Form
         _hotMods = _s.HotkeyModifiers;
         _hotKey = _s.HotkeyKey;
 
-        Text = "Zugapp Diktat – Einstellungen";
+        Text = "Diktat – Einstellungen";
         Icon = Icons.Microphone(Icons.Idle);
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -93,7 +93,7 @@ internal sealed class SettingsForm : Form
         Row("Sprache:", _lang);
 
         _vocab.Text = _s.Vocabulary;
-        Row("Namen / Fachbegriffe:", _vocab, "Kommagetrennt, z. B. „Zugapp, Müller-Lüdenscheidt, Kubernetes“ – hilft der Erkennung.");
+        Row("Namen / Fachbegriffe:", _vocab, "Kommagetrennt, z. B. „Diktat, Müller-Lüdenscheidt, Kubernetes“ – hilft der Erkennung.");
 
         // --- KI ---
         Section("KI-Nachbearbeitung");

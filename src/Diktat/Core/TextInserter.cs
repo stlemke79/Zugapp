@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Zugapp;
+namespace Diktat;
 
 /// <summary>Fügt Text in das zuvor aktive Fenster ein (über die Zwischenablage + Strg+V) und stellt die Zwischenablage danach wieder her.</summary>
 internal static class TextInserter

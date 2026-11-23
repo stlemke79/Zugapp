@@ -1,19 +1,19 @@
 using System;
 using System.IO;
 
-namespace Zugapp;
+namespace Diktat;
 
 internal static class AppPaths
 {
     public static string Config { get; } = Ensure(Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Zugapp"));
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Diktat"));
 
     public static string Models { get; } = Ensure(Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Zugapp", "models"));
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Diktat", "models"));
 
     public static string SettingsFile => Path.Combine(Config, "settings.json");
     public static string HistoryFile => Path.Combine(Config, "history.json");
-    public static string LogFile => Path.Combine(Config, "zugapp.log");
+    public static string LogFile => Path.Combine(Config, "diktat.log");
 
     private static string Ensure(string dir)
     {

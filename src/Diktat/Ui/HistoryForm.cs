@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace Zugapp;
+namespace Diktat;
 
 internal sealed class HistoryForm : Form
 {
@@ -13,7 +13,7 @@ internal sealed class HistoryForm : Form
     public HistoryForm(History history)
     {
         _history = history;
-        Text = "Zugapp Diktat – Verlauf";
+        Text = "Diktat – Verlauf";
         Icon = Icons.Microphone(Icons.Idle);
         StartPosition = FormStartPosition.CenterScreen;
         Size = new Size(760, 520);

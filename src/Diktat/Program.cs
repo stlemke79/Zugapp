@@ -2,18 +2,18 @@ using System;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace Zugapp;
+namespace Diktat;
 
 internal static class Program
 {
     [STAThread]
     private static void Main()
     {
-        using var mutex = new Mutex(true, @"Local\Zugapp.Diktat.SingleInstance", out bool isFirst);
+        using var mutex = new Mutex(true, @"Local\Diktat.SingleInstance", out bool isFirst);
         if (!isFirst)
         {
-            MessageBox.Show("Zugapp Diktat läuft bereits (Symbol unten rechts im Infobereich).",
-                "Zugapp Diktat", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Diktat läuft bereits (Symbol unten rechts im Infobereich).",
+                "Diktat", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 
