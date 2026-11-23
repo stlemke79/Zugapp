@@ -27,6 +27,11 @@ internal sealed class TrayApp : ApplicationContext
     private readonly Transcriber _transcriber = new();
     private readonly AudioRecorder _recorder = new();
     private readonly System.Windows.Forms.Timer _recordingWatch = new() { Interval = 500 };
+    private readonly Updater _updater = new();
+    private readonly System.Windows.Forms.Timer _updateTimer = new() { Interval = 60_000 };
+    private DateTime _nextUpdateCheck = DateTime.UtcNow.AddMinutes(1);
+    private DateTime _lastActivity = DateTime.UtcNow;
+    private static readonly TimeSpan UpdateInterval = TimeSpan.FromHours(4);
     private readonly ToolStripMenuItem _lastItem;
     private readonly SynchronizationContext _ui;
 
@@ -53,6 +58,8 @@ internal sealed class TrayApp : ApplicationContext
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Einstellungen …", null, (_, _) => OpenSettings());
         menu.Items.Add("Protokolldatei öffnen", null, (_, _) => OpenLog());
+        menu.Items.Add("Nach Updates suchen", null, async (_, _) => await CheckForUpdatesAsync(manual: true));
+        menu.Items.Add(new ToolStripMenuItem($"Version {_updater.CurrentVersion}") { Enabled = false });
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Beenden", null, (_, _) => ExitThread());
 
@@ -68,7 +75,18 @@ internal sealed class TrayApp : ApplicationContext
         _recorder.Level += level => _ui.Post(_ => _overlay.SetLevel(level), null);
         _recordingWatch.Tick += (_, _) => { if (_state == State.Recording && _recorder.Duration > MaxRecording) Toggle(); };
 
-        ApplyHotkey(showBalloon: true);
+        _updateTimer.Tick += async (_, _) => await UpdateTickAsync();
+        _updateTimer.Start();
+
+        if (Program.UpdatedToVersion is { } v)
+        {
+            ApplyHotkey(showBalloon: false);
+            Balloon("Diktat wurde aktualisiert", $"Jetzt auf Version {v}.", ToolTipIcon.Info);
+        }
+        else
+        {
+            ApplyHotkey(showBalloon: true);
+        }
         _ = StartupAsync();
     }
 
@@ -142,6 +160,7 @@ internal sealed class TrayApp : ApplicationContext
 
     private void Toggle()
     {
+        _lastActivity = DateTime.UtcNow;
         switch (_state)
         {
             case State.Idle:
@@ -304,6 +323,57 @@ internal sealed class TrayApp : ApplicationContext
         _processingCts = null;
     }
 
+    // ------------------------------------------------------------ Updates
+
+    private async Task UpdateTickAsync()
+    {
+        if (DateTime.UtcNow >= _nextUpdateCheck)
+        {
+            _nextUpdateCheck = DateTime.UtcNow + UpdateInterval;
+            await CheckForUpdatesAsync(manual: false);
+        }
+
+        // Ein fertig geladenes Update nur einspielen, wenn gerade niemand diktiert oder ein Fenster offen hat.
+        if (_updater.Pending is not null && IsQuiet())
+        {
+            _updater.ApplyAndRestart();
+        }
+    }
+
+    private bool IsQuiet()
+    {
+        if (_state != State.Idle) return false;
+        if (DateTime.UtcNow - _lastActivity < TimeSpan.FromMinutes(2)) return false;
+        foreach (Form form in Application.OpenForms)
+            if (form != _overlay && form.Visible) return false;
+        return true;
+    }
+
+    private async Task CheckForUpdatesAsync(bool manual)
+    {
+        var result = await _updater.CheckAndDownloadAsync();
+        if (!manual) return;
+        switch (result)
+        {
+            case UpdateCheckResult.NotInstalled:
+                Balloon("Keine Updates möglich",
+                    "Automatische Updates gibt es nur in der installierten Version (DiktatApp-win-Setup.exe aus den GitHub-Releases).",
+                    ToolTipIcon.Info);
+                break;
+            case UpdateCheckResult.UpToDate:
+                Balloon("Diktat ist aktuell", $"Version {_updater.CurrentVersion} ist die neueste.", ToolTipIcon.Info);
+                break;
+            case UpdateCheckResult.Downloaded:
+                if (MessageBox.Show($"Version {_updater.Pending?.Version} ist bereit.\n\nJetzt installieren? Diktat startet dafür kurz neu.",
+                        "Diktat – Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    _updater.ApplyAndRestart();
+                break;
+            case UpdateCheckResult.Failed:
+                Balloon("Update-Prüfung fehlgeschlagen", Truncate(_updater.LastError ?? "Unbekannter Fehler", 200), ToolTipIcon.Warning);
+                break;
+        }
+    }
+
     // ---------------------------------------------------------- Menüpunkte
 
     private void CopyLast()
@@ -382,6 +452,7 @@ internal sealed class TrayApp : ApplicationContext
             _recorder.Dispose();
             _transcriber.Dispose();
             _recordingWatch.Dispose();
+            _updateTimer.Dispose();
             _overlay.Dispose();
             _tray.Dispose();
             _iconIdle.Dispose();

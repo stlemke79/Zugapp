@@ -38,18 +38,23 @@ Ohne Schlüssel oder bei einem Fehler wird der unbearbeitete Text eingefügt.
 
 Standardmodell ist `claude-opus-5-5` mit niedrigem Denkaufwand. Schneller und günstiger ist `claude-haiku-5-5`, das lässt sich in den Einstellungen umstellen.
 
-## Herunterladen und starten
+## Installieren
 
-Bei jedem Push baut GitHub Actions das Programm:
-
-1. Im Repository auf **Actions** → **Windows-Build** → den neuesten Lauf klicken.
-2. Unten unter **Artifacts** auf **Diktat-win-x64** klicken. Es wird eine ZIP-Datei heruntergeladen.
-3. Die ZIP-Datei entpacken, z. B. nach `C:\Programme\Diktat` oder in einen Ordner unter „Dokumente“, und **Diktat.exe** starten.
-   .NET muss nicht installiert sein.
-4. Beim ersten Start meldet Windows SmartScreen eventuell „Unbekannter Herausgeber“. Dann auf **Weitere Informationen → Trotzdem ausführen** klicken.
-   Der Grund: Das Programm ist noch nicht signiert.
+1. Im Repository rechts auf **Releases** klicken (oder https://github.com/stlemke79/Zugapp/releases/latest öffnen).
+2. **DiktatApp-win-Setup.exe** herunterladen und ausführen. Das Programm wird für dein Benutzerkonto installiert, Administratorrechte sind nicht nötig.
+   Danach gibt es einen Eintrag im Startmenü, und unter Windows-Einstellungen → Apps lässt es sich deinstallieren.
+3. Windows SmartScreen meldet eventuell „Unbekannter Herausgeber“, weil das Programm nicht signiert ist. Dann auf **Weitere Informationen → Trotzdem ausführen** klicken.
 
 Unter Einstellungen → „Mit Windows starten“ startet das Programm automatisch.
+
+## Automatische Updates
+
+Jeder Push auf GitHub erzeugt über GitHub Actions eine neue Version als Release (1.0.1, 1.0.2 …).
+Diktat sucht beim Start und danach alle 4 Stunden nach einer neuen Version und lädt sie im Hintergrund herunter.
+Installiert wird sie, sobald du gerade nicht diktierst: Diktat startet dann kurz neu und meldet sich mit „Diktat wurde aktualisiert“.
+Über Rechtsklick → **Nach Updates suchen** geht es auch sofort.
+
+Das funktioniert nur, weil das Repository öffentlich ist. Das Programm lädt die Updates ohne Anmeldung herunter.
 
 ## Gut zu wissen
 
@@ -74,5 +79,6 @@ Aufbau:
 | `Core/Transcriber.cs` | Whisper-Spracherkennung und Modell-Download |
 | `Core/AiPostProcessor.cs` | Überarbeitung mit Claude (Anthropic C# SDK) |
 | `Core/FocusDetector.cs` | Erkennt, ob gerade ein Eingabefeld aktiv ist (Schreibmarke und UI Automation) |
+| `Core/Updater.cs` | Auto-Update über Velopack und GitHub-Releases |
 | `Core/TextInserter.cs` | Einfügen per Zwischenablage + Strg+V, danach Zwischenablage wiederherstellen |
 | `Ui/*` | Statusanzeige, Ergebnisfenster, Einstellungen, Verlauf, Download |

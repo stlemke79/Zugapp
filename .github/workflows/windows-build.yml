@@ -1,26 +1,49 @@
 name: Windows-Build
 
+# Jeder Push erzeugt eine neue Version als GitHub-Release.
+# Installierte Diktat-Versionen holen sich diese automatisch (Velopack).
 on:
   push:
-  pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  VELOPACK_VERSION: 1.2.161
+
 jobs:
-  build:
+  release:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Versionsnummer festlegen
+        shell: bash
+        run: echo "VERSION=1.0.${{ github.run_number }}" >> "$GITHUB_ENV"
 
       - name: Bauen (win-x64, ohne .NET-Installation lauffähig)
-        run: dotnet publish src/Diktat/Diktat.csproj -c Release -r win-x64 --self-contained -o publish
+        run: dotnet publish src/Diktat/Diktat.csproj -c Release -r win-x64 --self-contained -o publish -p:Version=${{ env.VERSION }}
 
-      - name: Programm als Download bereitstellen
-        uses: actions/upload-artifact@v4
-        with:
-          name: Diktat-win-x64
-          path: publish/
-          retention-days: 30
+      - name: Velopack-Werkzeug installieren
+        run: dotnet tool install -g vpk --version ${{ env.VELOPACK_VERSION }}
+
+      - name: Vorige Version holen (für kleine Delta-Updates)
+        continue-on-error: true
+        run: vpk download github --repoUrl https://github.com/${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }} -o releases
+
+      - name: Installer und Update-Pakete erstellen
+        run: vpk pack -u DiktatApp -v ${{ env.VERSION }} -p publish -e Diktat.exe --packTitle Diktat -o releases
+
+      - name: Als GitHub-Release veröffentlichen
+        run: vpk upload github --repoUrl https://github.com/${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }} -o releases --publish --releaseName "Diktat ${{ env.VERSION }}" --tag v${{ env.VERSION }} --targetCommitish ${{ github.sha }}
